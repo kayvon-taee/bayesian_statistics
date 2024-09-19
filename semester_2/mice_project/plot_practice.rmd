@@ -1,0 +1,112 @@
+---
+title: "MAS61006 Assessed Project"
+author: '220209225'
+date: "April 2024"
+output: pdf_document
+fontsize: 11pt
+bibliography: [references.bib, packages.bib]
+csl: harvard.csl
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::write_bib(c("mice"), "packages.bib")
+library(mice)
+library(tidyverse)
+library(gridExtra)
+library(viridis)
+library(rlist)
+library(patchwork)
+library(gtable)
+library(grid)
+set.seed(42)
+```
+
+```{r trying to visualise a different way, cache = TRUE, message=FALSE, fig.width = 12}
+# Read your data
+df <- read_csv("plotting_dataframe.csv")
+
+process_data <- function(requested_parameter) {
+# Filter data for the required "Dataset.description"
+required_data <- df %>%
+  mutate(
+    Dataset.description = as.character(Dataset.description),
+    Dataset.description = recode(
+      Dataset.description,
+      "Original" = "Original",
+      "5% missing complete case" = "5% CC",
+      "15% missing complete case" = "15% CC",
+      "25% missing complete case" = "25% CC",
+      "5% missing pooled" = "5% pool",
+      "15% missing pooled" = "15% pool",
+      "25% missing pooled" = "25% pool",
+      "Pooled data with PMM" = "Pool PMM",
+      "Pooled data with Random sample" = "Pool Ran. Sample",
+      "Pooled data with random forest" = "Pool Ran. Forest",
+      "Seed 42 complete case" = "Seed 42 CC",
+      "Seed 25 complete case" = "Seed 25 CC",
+      "Seed 100 complete case" = "Seed 100 CC",
+      "Seed 42 pooled" = "Seed 42 pool",
+      "Seed 25 pooled" = "Seed 25 pool",
+      "Seed 100 pooled" = "Seed 100 pool")
+  ) %>% mutate(
+     Dataset.description = factor(Dataset.description,
+                                  levels = c("Original",
+                                             "15% CC",
+                                              "Seed 42 CC",
+                                             "15% pool",
+                                             "Pool PMM",
+                                             "Seed 42 pool",
+                                             "5% CC",
+                                             "25% CC",
+                                             "5% pool",
+                                             "25% pool",
+                                             "Pool Ran. Sample",
+                                             "Pool Ran. Forest",
+                                             "Seed 25 CC",
+                                             "Seed 100 CC",
+                                             "Seed 25 pool",
+                                             "Seed 100 pool"))) %>%
+  filter(Parameter.Name == requested_parameter)
+}
+
+forest_plot_experiments <- function(df, requested_parameter) {
+  filtered_df <- process_data(requested_parameter)
+  
+  original_estimate <- filtered_df %>% filter(Dataset.description == "Original", Experiment == "Experiment A") %>% pull(Parameter.Estimate)
+  filtered_df %>% ggplot(., aes(x = Parameter.Estimate, y = Dataset.description)) + facet_wrap(~Experiment) +
+  geom_point(aes(color = Dataset.description), position = position_dodge(0.8), alpha = 0.5, size = 3) +
+  geom_errorbar(aes(xmin = Parameter.Estimate - Parameter.Standard.Error,
+      xmax = Parameter.Estimate + Parameter.Standard.Error, color = Dataset.description),
+                width = 0.2, position = position_dodge(0.8)) + geom_vline(xintercept = original_estimate, linetype = "dashed")   +
+  theme_bw() +
+  labs(x = paste(requested_parameter, "parameter estimate"), y = "Dataset Description", color = "Dataset Description") +
+  theme(plot.title = element_text(hjust = 0.5)) + scale_colour_manual(values = c(
+    'Original' = '#F8766D',
+    '15% CC' = '#E18A00', 
+    'Seed 42 CC' = '#E18A00', 
+    '15% pool' = '#BE9C00', 
+    'Pool PMM' = '#BE9C00', 
+    'Seed 42 pool' = '#BE9C00', 
+    '5% CC' = '#8CAB00', 
+    '25% CC' = '#24B700', 
+    '5% pool' = '#00BE70', 
+    '25% pool' = '#00C1AB', 
+    'Pool Ran. Sample' = '#00BBDA', 
+    'Pool Ran. Forest' = '#00ACFC', 
+    'Seed 25 CC' = '#8B93FF', 
+    'Seed 100 CC' = '#D575FE', 
+    'Seed 25 pool' = '#F962DD', 
+    'Seed 100 pool' = '#FF65AC'))
+}
+
+for (param in unique(df$Parameter.Name)) {
+  forest_plot_experiments(df, param)
+   param_adjusted <- ifelse(grepl(":", param), gsub(":", "_", param), param)
+   
+  ggsave(paste("parameter_plot","_",param_adjusted, ".png", sep = ""), dpi = 300, width = 15, height = 8)
+}
+
+forest_plot_experiments(df, "BMI*Smoker: Yes interaction")
+ggsave("parameter_plot_BMI_Smoker_Yes_Interaction.png",  dpi = 300, width = 15, height = 8)
+```

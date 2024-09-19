@@ -1,0 +1,624 @@
+---
+title: "MAS61006 Assessed Project"
+author: '220209225'
+date: "April 2024"
+output: pdf_document
+fontsize: 11pt
+header-includes:
+  - \usepackage{titling}
+  - \setlength{\droptitle}{-9em}
+  - \usepackage{float}
+  - \restylefloat{figure}
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(mice)
+library(tidyverse)
+library(gridExtra)
+library(viridis)
+library(rlist)
+library(patchwork)
+library(grid)
+set.seed(42)
+
+```
+
+**The data**
+
+```{r loading the data, include=FALSE}
+# Source: https://github.com/stedy/Machine-Learning-with-R-datasets/blob/master/insurance.csv
+insurance <- read.csv("insurance.csv")
+insurance$sex <- as.factor(insurance$sex)
+insurance$smoker <- as.factor(insurance$smoker)
+insurance$region <- as.factor(insurance$region)
+```
+
+The data used is a simulated data of medical expenses for patients in the USA using demographic statistics from the US Census Bureau with 1338 observations, consisting of **age** (Integer, age of primary significance excluding above 64 year olds), **sex** (Binary character, male, female), **bmi** (Continuous number, Body Mass Index (kg / m^2^) of policy holder), **children** (Integer 0 - 5, number of children/dependents covered by insurance plan), **smoker** (Binary character (yes, no), regular smoker or otherwise), **region** (4 level factor of northeast, northwest, southeast, southwest), beneficiary place of residence) and **charges** (Continuous number, the cost of insurance to the beneficiary^1^)
+
+**The model**
+
+```{r normality checks on continuous variables, fig.cap="QQ plots for the continuous variables age, bmi and charges. When the log transformation is applied to charges, they all agree strongly with normality checks. Homosecasdicity and correlation was also checks. All generally ok." ,include=FALSE}
+par(mfrow = c(2, 2)) # Plot 4 graphs on 1 page
+cols <- c("age", "bmi", "charges") 
+for (col in cols) {
+  
+  valid_data <- insurance[[col]]
+  
+  # If it's "charges", apply the log transformation - required to "normalise" data
+  if (col == "charges") {
+    valid_data <- log(valid_data)
+  }
+
+  # Create the QQ plot
+  qqnorm(valid_data, main=paste("QQ Plot of", col))
+  qqline(valid_data, col = 2) # Add reference line
+  
+
+}
+
+print(cor(insurance[cols]))
+
+library(polycor)
+
+# Make a copy of the dataframe
+insurance_copy <- insurance
+
+# Convert variables to factors in the copy dataframe
+insurance_copy$sex <- as.factor(insurance_copy$sex)
+insurance_copy$children <- as.factor(insurance_copy$children)
+insurance_copy$smoker <- as.factor(insurance_copy$smoker)
+insurance_copy$region <- as.factor(insurance_copy$region)
+
+# Compute the correlation matrix for the copy dataframe
+result <- hetcor(insurance_copy)
+
+# Print the correlation matrix
+print(result$correlations)
+
+```
+
+```{r shorthand for model summary output, include=FALSE}
+model_summary <- function(dataframe) {
+  summary(lm(log(charges) ~ age + sex + bmi + children + smoker + region + bmi*smoker, data = dataframe))
+}
+```
+
+```{r basic model fitting, include=FALSE}
+original_lm_fit <- lm(log(charges) ~ age + sex + bmi + children + smoker + region + bmi*smoker, data = insurance)
+summary(original_lm_fit)
+```
+
+Linear regression assumptions were verified (see code), revealing that applying a log transform to the charges response variable aligned with the requirements of linear regression. The other variables were treated as explanatory variables. The model is noted below: $$
+y_i = \beta_0 + \beta_1x_{1i} + \beta_2x_{2i} + \beta_3x_{3i} + \beta_4x_{4i} + \beta_5x_{5i} + \beta_6x_{6i} + \beta_7x_{3i}x_{5i} + \epsilon_i
+$$
+
+Where:
+
+-   $y_i$ - the log transformation of the charges variable
+
+-   $x_{1i}$ - age
+
+-   $x_{2i}$ - sex ($x_2 = 1$ if the sex is male)
+
+-   $x_{3i}$ - BMI
+
+-   $x_{4i}$ - children ($x_4 = 1$ if the beneficiary has children)
+
+-   $x_{5i}$ - smoker ($x_{5} = 1$ if the beneficiary is a regular smoker)
+
+-   $x_{6i}$ - region ($x_{6} = 1$ if the beneficiary lives in the northwest, southeast or southwest)
+
+-   $\beta_7x_{3i}x_{5i}$ - the interaction term between BMI and smoker status (see EDA section)
+
+**EDA**
+
+```{r make data missing, include=FALSE}
+makeMissing <- function(mydf, probMissing){
+# mydf: your data frame
+# probMissing: the probability that any single
+# element of the data frame will be changed to NA
+R <- matrix(rbinom(nrow(mydf) * ncol(mydf),
+1,
+probMissing),
+nrow = nrow(mydf),
+ncol = ncol(mydf))
+mydf[R == 1] <- NA
+mydf
+}
+
+insurance_missing_15percent <- makeMissing(insurance, 0.15)
+
+```
+
+```{r, cache=FALSE, include=FALSE, warning=FALSE}
+# Create the plots
+p1 <- ggplot(data = insurance_missing_15percent, aes(x = age, y = charges,
+    colour = as.factor(children), shape = region)) +
+    geom_point() +
+    facet_wrap(~ smoker, ncol = 3) +
+    theme_bw() +  # Set theme_bw() before customizing the legend positions
+    theme(legend.position = "none", text = element_text(size = 15))
+
+p2 <- ggplot(data = insurance_missing_15percent, aes(x = bmi, y = charges,
+    colour = as.factor(children), shape = region)) +
+    geom_point() +
+    facet_wrap(~ smoker, ncol = 3) +
+    theme_bw() +  # Set theme_bw() before customizing the legend positions
+    guides(shape = guide_legend(nrow = 2, title = "Region"),
+           colour = guide_legend(title.hjust = 0.5, nrow = 2, title = "Number of Children"))  + theme(text = element_text(size = 15))
+
+caption <- paste(strwrap("Age, BMI, and Insurance Premiums across Smoking Statuses (Yes, No, NA). Non-smokers show a notable positive correlation between age and premiums, while smokers tend to have higher premiums with positive associations with BMI and age. An interaction effect emerges for BMI among smokers, indicating a positive correlation with premiums, contrasting with non-smokers. The data reveals no correlation between variables and missing values.", width = 90), collapse = "\n")
+
+# Arrange the plots
+eda_plot <- arrangeGrob(p1, p2, nrow = 1, widths = c(1.5,2))
+
+ggsave("eda_plot.png", eda_plot, dpi=300, width = 15, height = 5)
+
+```
+
+![Age, BMI, and Insurance Premiums across Smoking Statuses (Yes, No, NA). Non-smokers show a notable positive correlation between age and premiums, while smokers tend to have higher premiums with positive associations with BMI and age. An interaction effect emerges for BMI among smokers, indicating a positive correlation with premiums, contrasting with non-smokers. The data reveals no correlation between variables and missing values.](eda_plot.png){width="679"}
+
+The dataset initially had no missing data, but it was manipulated using a script to artificially introduce a 15% missingness randomly, a frequency often observed in surveys/censuses^2^. Further exploration of the 'children' and 'region' variables showed no significant patterns, and the distribution of charges across regions was strikingly similar, undermining any potential correlation with the number of children. An interaction effect between BMI and smoker status further necessitates the exploration of various imputation methods, as some might better capture this complex relationship.
+
+Therefore, we will focus on analysing the MICE algorithm's performance under varying conditions: different levels of missingness (**Experiment A**), alternative imputation methods (**Experiment B**), and robustness to varied missingness sampling (**Experiment C**).
+
+```{r further checks, cache=FALSE, include=FALSE}
+
+further_analysis_vector <- c("children", "region")
+
+for (x_var in further_analysis_vector) {
+  total_counts <- insurance_missing_15percent %>%
+    group_by(.data[[x_var]]) %>%
+    summarise(count = n())
+
+  max_charges <- max(insurance_missing_15percent$charges, na.rm = TRUE)
+
+  p <- ggplot(insurance_missing_15percent, aes(x = as.factor(.data[[x_var]]), y = charges)) +
+    geom_point(alpha = 0.5) +
+    geom_text(data = total_counts,
+              aes(label = count, y = max_charges), vjust = -1, check_overlap = TRUE) +
+    theme_bw() +
+    labs(x = x_var, y = "log(Charges)")+ ylim(1.9, 2.5)
+
+  print(p)
+}
+
+```
+
+```{r insurance 15 percent missing used for all experiments, cache = FALSE}
+insurance_imp_exp1_15percent <- mice(insurance_missing_15percent, m = 10, maxit = 20, print = F, seed = 42)
+```
+
+**Method**
+
+Unless specified, all plots will use a seed of 42 with 15% missing data, along with the PMM default imputation method.
+
+**Experiment A**
+
+1.  Using `set.seed(42)`, generate 3 datasets with varied probabilities of missingness (0.05, 0.15, 0.25).
+2.  For each dataset, fit the linear model specified in the model section to perform a complete case analysis. You should expect to see increased standard deviation with greater missingness.
+3.  Compare the parameter estimates and standard errors between the models to initial metrics for assessing the algorithm's performance.
+
+The subsequent steps involve running the MICE algorithm and assessing its performance:
+
+4.  For each original dataset, create a duplicate object. Run the mice() function on each copy, setting both m and maxit to 20, seed to 42, and using the default method. This operation should result in three MICE objects.
+5.  Check convergence of the algorithm by plotting trace plots of the mean and standard deviation, which can be seen when the trace lines "band together" towards a stable value.
+6.  Fit the linear model to the imputed datasets and pool the results. Compare the parameter estimates and the standard error to the results of the complete case analysis, providing an additional perspective on the MICE algorithm's utility.
+
+**Experiment B**
+
+1.  Similar to A1 (`set.seed(42)` with a 0.15 probability of missingness), generate 1 dataset and Fit the linear model described in the model section to conduct a complete case analysis (Seen in A2)
+2.  Skipping step A3, create 3 mice objects by using the same `m` and `maxit` values, but vary the method for each one ('pmm', 'sample' and 'rf'). Perform the rest of the steps A5 (checking convergence) and A6 (fitting a linear model, results and compare parameter estimates/standard error) from the above.
+
+**Experiment C**
+
+1.  Instead of generating 3 datasets with 3 probabilities, create 3 datasets using 3 different seeds, (42, 25 and 100) and a constant missingness probability of 0.15. Perform steps A2 (complete case analysis) and A3 (compare parameter estimates for complete case) as before.
+2.  Similar to A4 (duplicating objects), except set the seed argument to the respective datasets. (E.g. if you are using the dataset with set.seed(42) is used from step one, use seed=42 when creating the mice object). Perform steps A5 (check convergence) and A6 (Compare parameter estimates) as before.
+
+**Convergence of the MICE algorithm**
+
+```{r convergence plot function, cache = TRUE, include = FALSE}
+convergence_plot <- function(mice_imp) {
+  plot(mice_imp, layout = c(4,4))
+}
+```
+
+```{r trace plots, cache = TRUE, include=FALSE}
+png("convergence_example.png", res = 300, width = 2160, height = 1440)
+convergence_plot(insurance_imp_exp1_15percent)
+dev.off()
+```
+
+![Trace plots for each variable in the insurance dataset with 15% missing data and a seed set to 42. Each line represents a dataset produced by the MICE algorithm with the point for each iteration step. The constant nature of the lines across iterations indicates algorithm convergence.](convergence_example.png){width="421"}
+
+The constant nature of the lines suggests that after a certain number of iterations, the imputed values have converged around a stable mean and standard deviation. Without checking convergence, it can lead to greater variability of the imputed values in the final pooled dataset, which can bias the linear model parameters.
+
+**Experiment A results**
+
+```{r function to generate pooled mice obj results, cache = FALSE, include=FALSE}
+generatePooledResults <- function(mice_imp) {
+  pool(with(mice_imp, lm(log(charges) ~ age + sex + bmi + children + smoker + region + bmi*smoker)))
+}
+```
+
+```{r function to generate dataframe for plotting results, cache = FALSE, include = FALSE}
+
+
+generate_entries_for_plotting_df <- function(dataset_object, experiment, description, df = plotting_dataframe) {
+  
+  # initializing the dataframe to be appended
+  df_to_append <- data.frame("Parameter Name" = character(), 
+                             "Parameter Estimate" = numeric(), 
+                             "Parameter Standard Error" = numeric(), 
+                             "Experiment" = character(), 
+                             "Dataset description" = character(), 
+                             stringsAsFactors=FALSE)
+
+  
+  # If the model_summary has the column names "estimate" and "std.error", then it's a MICE pooled object
+  if (is.mipo(dataset_object)) {
+    model_summary_output <- summary(dataset_object)
+    for (i in 1:nrow(model_summary_output)) {
+      
+      # Extract the parameter name, estimate and standard error
+      parameter_name <- vector_of_parameter_names[i]
+      parameter_estimate <- model_summary_output$estimate[i]
+      parameter_standard_error <- model_summary_output$`std.error`[i]
+      
+      # Append the dataframe
+      row_to_append <- data.frame("Parameter Name" = parameter_name, 
+                                  "Parameter Estimate" = parameter_estimate, 
+                                  "Parameter Standard Error" = parameter_standard_error, 
+                                  "Experiment" = experiment, 
+                                  "Dataset description" = description, 
+                                  stringsAsFactors=FALSE)
+      
+      df_to_append <- rbind(df_to_append, row_to_append)
+    }
+     df <- rbind(df, df_to_append)
+  
+  return(df)
+  }
+  
+  # If check fails, then the model_summary isn't from pooled MICE object but base lm()
+  
+  coefficients_object <- dataset_object$coef
+  
+  for (i in 1:nrow(coefficients_object)) {
+     parameter_name <- vector_of_parameter_names[i]
+     parameter_estimate <- coefficients_object[, "Estimate"][i]
+     parameter_standard_error <- coefficients_object[, "Std. Error"][i]
+     
+     # Append the dataframe
+      row_to_append <- data.frame("Parameter Name" = parameter_name, 
+                                  "Parameter Estimate" = parameter_estimate, 
+                                  "Parameter Standard Error" = parameter_standard_error, 
+                                  "Experiment" = experiment, 
+                                  "Dataset description" = description, 
+                                  stringsAsFactors=FALSE)
+     
+      df_to_append <- rbind(df_to_append, row_to_append)
+  }
+  
+
+  
+  # Combine the initial dataframe with the dataframe to be appended
+  df <- rbind(df, df_to_append)
+  
+  return(df)
+}
+```
+
+```{r functions to produce output to general info, cache = FALSE}
+generate_complete_case_model_summary_output <- function(original_data_set, ...){
+
+  list_of_datasets <- list(...)
+
+  # get all argument names as a list of strings
+  argument_names <- as.list(match.call())
+
+  # remove the function name and 'original_data_set' from the list
+  argument_names <- argument_names[-c(1, which(names(argument_names) == "original_data_set"))]
+
+  # convert to character
+  data_set_names <- lapply(argument_names, as.character)
+
+  if(length(list_of_datasets) > 0) {
+  for (i in 1:length(list_of_datasets)) {
+    print(paste(data_set_names[[i]], "complete case"))
+    print(model_summary(list_of_datasets[[i]]))
+    cat("\n")
+  }
+  }
+
+  print("Original dataset (Insurance)")
+  print(model_summary(original_data_set))
+  cat("\n")
+}
+
+generate_pooled_model_summary_output <- function(imp1, imp2, imp3) {
+
+  data_set_names <- c(deparse(substitute(imp1)), deparse(substitute(imp2)), deparse(substitute(imp3)))
+
+  pooled_result_1 <- generatePooledResults(imp1)
+  pooled_result_2 <- generatePooledResults(imp2)
+  pooled_result_3 <- generatePooledResults(imp3)
+
+  pooled_results <- list(pooled_result_1 = pooled_result_1, pooled_result_2 = pooled_result_2, pooled_result_3 = pooled_result_3)
+
+  for (i in 1:length(pooled_results)) {
+    cat("\n")
+    print(paste(data_set_names[i], "pooled result"))
+    print(summary(pooled_results[[i]]))
+  }
+}
+
+```
+
+```{r check convergence for other datasets in experiment 1, cache = FALSE, include=FALSE, fig.cap="Convergence plots for the 5 percent and 25 percent missing datasets for experiment 1. Plots suggest no correlation between number of iterations and the mean/standard deviation, indicating the mean/standard deviation for each variable has converged successfully."}
+insurance_missing_5percent <- makeMissing(insurance, 0.05)
+insurance_missing_25percent <- makeMissing(insurance, 0.25)
+
+insurance_imp_exp1_5percent <- mice(insurance_missing_5percent, m = 10, maxit = 20, print = F, seed = 42)
+insurance_imp_exp1_25percent <- mice(insurance_missing_25percent, m = 10, maxit = 20, print = F, seed = 42)
+
+convergence_plot(insurance_imp_exp1_5percent)
+convergence_plot(insurance_imp_exp1_25percent)
+```
+
+```{r experiment 1, cache = FALSE, include = FALSE}
+
+
+# Linear models
+
+generate_complete_case_model_summary_output(insurance, insurance_missing_5percent, insurance_missing_15percent, insurance_missing_25percent)
+
+generate_pooled_model_summary_output(insurance_imp_exp1_5percent, insurance_imp_exp1_15percent, insurance_imp_exp1_25percent)
+```
+
+```{r experiment 2 checking convergence, cache = TRUE, include = FALSE}
+insurance_imp_exp2_pmm <- mice(insurance_missing_15percent, method = "pmm", m = 10, maxit = 20, print = F, seed = 42)
+insurance_imp_exp2_sample <- mice(insurance_missing_15percent, method = "sample", m = 10, maxit = 20, print = F, seed = 42)
+insurance_imp_exp2_rf <- mice(insurance_missing_15percent, method = "rf", m = 10, maxit = 20, print = F, seed = 42)
+
+# PMM is the default method and the seed is the same. Only need to produce convergence for the other two methods
+convergence_plot(insurance_imp_exp2_sample)
+convergence_plot(insurance_imp_exp2_rf)
+
+```
+
+```{r experiment 2 results, cache = FALSE, include = FALSE}
+generate_complete_case_model_summary_output(insurance, insurance_missing_15percent)
+generate_pooled_model_summary_output(insurance_imp_exp2_pmm, insurance_imp_exp2_sample, insurance_imp_exp2_rf)
+```
+
+```{r experiment 3 prep, cache = TRUE}
+# You can use original 15 percent missing as that's our 42 seed.
+set.seed(25)
+insurance_exp3_seed25 <- makeMissing(insurance, 0.15)
+insurance_exp3_seed25_imp <- mice(insurance_exp3_seed25, seed = 25, m = 10, maxit = 20, print = F)
+set.seed(100)
+insurance_exp3_seed100 <- makeMissing(insurance, 0.15)
+insurance_exp3_seed100_imp <- mice(insurance_exp3_seed100, seed = 100, m = 10, maxit = 20, print = F)
+```
+
+```{r experiment 3, convergence plots, cache = FALSE, include = FALSE}
+convergence_plot(insurance_exp3_seed25_imp)
+convergence_plot(insurance_exp3_seed100_imp)
+```
+
+```{r experiment 3 model outputs, cache = FALSE, include = FALSE}
+generate_complete_case_model_summary_output(insurance, insurance_missing_15percent, insurance_exp3_seed25, insurance_exp3_seed100)
+generate_pooled_model_summary_output(insurance_imp_exp1_15percent, insurance_exp3_seed25_imp, insurance_exp3_seed100_imp)
+```
+
+```{r creating the dataframe for results plot, cache = FALSE, include = FALSE}
+
+# Create an empty dataframe with specific column names
+plotting_dataframe <- data.frame("Parameter Name" = character(), 
+                 "Parameter Estimate" = numeric(), 
+                 "Parameter Standard Error" = numeric(), 
+                 "Experiment" = character(), 
+                 "Dataset description" = character(), 
+                 stringsAsFactors=FALSE)
+
+vector_of_parameter_names <- c("Intercept", "Age", "Sex: Male", "BMI", "Children", "Smoker: Yes", "Region: North West", "Region: South East", "Region: South West", "BMI*Smoker: Yes interaction")
+
+model_summary_list <- list(summary(original_lm_fit), model_summary(insurance_missing_5percent), model_summary(insurance_missing_15percent), model_summary(insurance_missing_25percent), generatePooledResults(insurance_imp_exp1_5percent), generatePooledResults(insurance_imp_exp1_15percent), generatePooledResults(insurance_imp_exp1_25percent), summary(original_lm_fit), model_summary(insurance_missing_15percent), generatePooledResults(insurance_imp_exp2_pmm), generatePooledResults(insurance_imp_exp2_sample), generatePooledResults(insurance_imp_exp2_rf), summary(original_lm_fit), model_summary(insurance_missing_15percent), model_summary(insurance_exp3_seed25), model_summary(insurance_exp3_seed100), generatePooledResults(insurance_imp_exp1_15percent), generatePooledResults(insurance_exp3_seed25_imp), generatePooledResults(insurance_exp3_seed100_imp))
+
+experiment_vector <- c(rep("Experiment A", 7), rep("Experiment B", 5), rep("Experiment C", 7))
+
+description_vector <- c("Original", "5% missing complete case", "15% missing complete case",
+                         "25% missing complete case", "5% missing pooled", "15% missing pooled",
+                         "25% missing pooled", "Original", "15% missing complete case",
+                         "Pooled data with PMM", "Pooled data with Random sample",
+                         "Pooled data with random forest", "Original", "Seed 42 complete case",
+                         "Seed 25 complete case", "Seed 100 complete case", "Seed 42 pooled",
+                         "Seed 25 pooled", "Seed 100 pooled")
+
+
+
+
+for (i in 1:length(model_summary_list)) {
+  plotting_dataframe <- generate_entries_for_plotting_df(model_summary_list[[i]], experiment_vector[i], description_vector[i], plotting_dataframe)
+}
+
+rownames(plotting_dataframe) <- NULL
+```
+
+```{r forest_plot, cache = TRUE, message=FALSE, fig.width=20, fig.height=10}
+# Filter data for the required "Dataset.description"
+required_data <- plotting_dataframe %>%
+  mutate(
+    Dataset.description = as.character(Dataset.description),
+    Dataset.description = recode(
+      Dataset.description,
+      "Original" = "Original",
+      "5% missing complete case" = "5% CC",
+      "15% missing complete case" = "15% CC",
+      "25% missing complete case" = "25% CC",
+      "5% missing pooled" = "5% pool",
+      "15% missing pooled" = "15% pool",
+      "25% missing pooled" = "25% pool",
+      "Pooled data with PMM" = "Pool PMM",
+      "Pooled data with Random sample" = "Pool Ran. Sample",
+      "Pooled data with random forest" = "Pool Ran. Forest",
+      "Seed 42 complete case" = "Seed 42 CC",
+      "Seed 25 complete case" = "Seed 25 CC",
+      "Seed 100 complete case" = "Seed 100 CC",
+      "Seed 42 pooled" = "Seed 42 pool",
+      "Seed 25 pooled" = "Seed 25 pool",
+      "Seed 100 pooled" = "Seed 100 pool")
+  ) %>% mutate(
+     Dataset.description = factor(Dataset.description,
+                                  levels = c("Original",
+                                             "15% CC",
+                                              "Seed 42 CC",
+                                             "15% pool",
+                                             "Pool PMM",
+                                             "Seed 42 pool",
+                                             "5% CC",
+                                             "25% CC",
+                                             "5% pool",
+                                             "25% pool",
+                                             "Pool Ran. Sample",
+                                             "Pool Ran. Forest",
+                                             "Seed 25 CC",
+                                             "Seed 100 CC",
+                                             "Seed 25 pool",
+                                             "Seed 100 pool")))
+
+required_data$Parameter.Type <- with(plotting_dataframe, 
+                                        ifelse(Parameter.Name %in% c("Intercept", "Smoker: Yes"), "Type 1",
+                                        ifelse(Parameter.Name %in% c("Sex: Male", "Region: North West", "Region: South East", "Region: South West"), "Type 2",
+                                        "Type 3")))
+
+assign_color <- function(df, n) {
+  df <- df %>%
+    mutate(Dataset.description = factor(Dataset.description))
+  
+  levels <- levels(df$Dataset.description)
+  colors <- scales::hue_pal()(n)
+  names(colors) <- levels
+  df$color <- colors[df$Dataset.description]
+  
+  return(list(df = df, colors = colors))
+}
+
+# Function to plot each experiment separately
+plot_experiment <- function(experiment_name, df) {
+  df_subset <- df[df$Experiment == experiment_name, ]
+    
+  # Determine number of unique Dataset.descriptions for this experiment  
+  n <- length(unique(df_subset$Dataset.description))
+  
+  # Assign color to each Dataset.description
+  color_assignment <- assign_color(df_subset, n)
+  df_subset <- color_assignment$df
+  colors <- color_assignment$colors
+  
+  p <- df_subset %>%
+    ggplot(aes(x = Parameter.Estimate, y = Parameter.Name)) + 
+    facet_wrap(Experiment ~ Parameter.Type, scales = "free", labeller = labeller(Parameter.Type = function(x) "", Experiment = identity)) +
+    geom_point(aes(color = Dataset.description), position = position_dodge(0.8), alpha = 0.5, size = 3) +
+    geom_errorbar(aes(xmin = Parameter.Estimate - Parameter.Standard.Error,
+                      xmax = Parameter.Estimate + Parameter.Standard.Error,
+                      color = Dataset.description), width = 0.2, position = position_dodge(0.8)) + 
+    geom_vline(xintercept = 0, linetype = "dashed") +
+    theme_bw() +
+    theme(plot.title = element_blank(),
+        axis.title.x = element_text(size = 15), 
+        axis.title.y = element_text(size = 15), 
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        legend.title = element_text(size = 14),
+        legend.text = element_text(size = 12),
+        strip.background = element_blank(),
+        strip.text = element_text(size = 16)) + 
+    scale_color_manual('Dataset Description', values = colors) + xlab("Parameter estimate") + ylab("Parameter name")
+
+  
+  return(p)
+}
+
+# List out all experiments
+experiments = unique(required_data$Experiment)
+
+# Generate the plot
+combined_plot = plot_experiment(experiments[1], required_data)
+
+for (experiment_name in experiments[-1]) {
+  combined_plot = combined_plot / plot_experiment(experiment_name, required_data)
+}
+
+
+```
+
+```{r, fig.width=15, fig.height = 6, cache=TRUE, fig.cap="Forest plot against different proprotions of missingness comparing the original, compelte case and imputed datasets. Imputed datasets generally have smaller standard errors than those of complete case datasets. As the proportion of missing data increases, parameter estimates for imputed datasets deviate more from the original, and pooled datasets tend to have standard errors equal to or larger than those of the original. Therefore, increasing missingness will produce more deviation of parameter estimates and the standard error size in pooled datasets compared to the original dataset."}
+required_data_copy <- required_data
+required_data_copy$Parameter.Type <- with(plotting_dataframe, 
+                                        ifelse(Parameter.Name %in% c("Intercept", "Smoker: Yes"), "Type 1",
+                                        ifelse(Parameter.Name %in% c("Sex: Male", "Region: North West", "Region: South East", "Region: South West"), "Type 2&3",
+                                        "Type 2&3")))  
+
+
+experiment_a_plot <- plot_experiment("Experiment A", required_data_copy)
+experiment_a_plot
+
+
+
+```
+
+-   Imputed datasets have lower standard errors than complete case datasets as the MICE algorithm imputes data into rows with missing values, increasing complete observations.
+
+-   Pooled datasets have equal or larger parameter estimate standard errors because while they have the same number of complete cases after imputation, the MICE algorithm standard error also accounts for variance due to missingness, which increases the size of the error bars on these plots.
+
+-   While a complete case analysis that yields estimates closer to the original for largely missing datasets might seem more accurate, it doesn't signify superiority over MICE. Greater similarity is due to complete cases depending solely on available data which, while reducing sample size and raising uncertainty, remain within known parameter limits. MICE, however, aims for not replication but the creation of plausible scenarios that factor in the inherent uncertainty of missing values. This results in larger variation in imputed dataset estimates compared to the original, reflecting the natural variability when handling missing values. Thus, although the estimates from imputed datasets might differ from the original dataset, this reflects the algorithm's strength in mimicking real-world uncertainty rather than inaccuracy.
+
+**Experiment B Results**
+
+```{r, fig.width=15, fig.height=6, cache=TRUE, fig.cap="Forest plot of parameter estimates different imputation methods against orgiinal and 15% complete case datasets. PMM has the closest parameter estimates to the 15% complete case dataset and the random forest follows the original data parameter esitmate much more closely than the other imputation methods. Random sample has the largest standard error, suggesting Random Forest imputation method is optimal for our missing dataset."}
+
+experiment_b_plot <- plot_experiment("Experiment B", required_data_copy)
+experiment_b_plot
+```
+
+-   Random Forest excels in handling complex interactions^3^, evident in its closer parameter estimates to the original, showing its strength in the context of our dataset's complex relationships like BMI and smoker status. This superior performance over simpler methods is an example of how MICE, and particularly the use of sophisticated algorithms like Random Forest within MICE, can yield more accurate results in complex data scenarios
+
+-   It is possible that the PMM pooled dataset has standard errors closer to the original than the expected random forest because PMM is a semi-parametric method, whereas random forest is a non-parametric method. In the case of the MICE algorithm, the non-parametric imputation method like Random Forest does not impose any specific data distribution, possibly leading to a greater risk of noise propagation in the imputed values from the complex model fitting procedure. This increased randomness in the imputed datasets using Random Forest can potentially inflate the standard error estimates in the pooled analysis, compared to those obtained with PMM which employs a more controlled imputation procedure due to its semi-parametric nature^3^.
+
+```{r}
+pagebreak <- function() {
+  if(knitr::is_latex_output())
+    return("\\newpage")
+  else
+    return('<div style="page-break-before: always;" />')
+}
+```
+
+#### Experiment C results
+
+```{r, fig.width=15, fig.height=6, cache=TRUE, fig.cap = "Forest plot of 3 datasets generated using different seeds against the original and complete case. For each seed, the parameter estimates of the complete case against the imputed dataset shifted in has been shifted by approximately the same amount. The parameter estimate and parameter estimate standard error between seed 25, 42 and 100 are similar, suggests that MICE is robust against different distributions of missingness in the dataset. Given the data being MCAR, the MICE algorithm is expected to provide similar imputations across varying missingness distributions, yielding approximately equal standard errors across datasets, as observed in our experiment."}
+
+experiment_c_plot <- plot_experiment("Experiment C", required_data_copy)
+experiment_c_plot
+```
+
+`r pagebreak()`
+
+### Conclusion
+
+In conclusion, we investigated the effects of missing data on fitting a linear model to a dataset of medical expenses. Our experiment focused on using an algorithm called MICE that helps "fill in" missing data, and we wanted to see how well the algorithm would perform if we altered how much data was missing, changing the way we fill in the missing values and to see if the algorithm could be effective against different versions of the missing data (but similar amount of missing data). It seems the algorithm does well against different missing dataset versions, but can be less reliable when there is a large amounts of missingness. Changing the method of filling the data can be effective, but it depends on the relationship between the variables. In our case, our data had a complex relationship between BMI and smoking status, so a sophisticated filling technique called random forest outperformed others researched in this project.
+
+References
+
+1. Lantz, B. (2013) Machine learning with r. 1st edition. Birmingham: Packt Publishing
+(Community experience distilled)
+2. Dong, Y. and Peng, C.-Y. J. (2013) \'Principled missing data methods for researchers\',
+SpringerPlus, 2(1), pp. 1--17. doi: 10.1186/2193-1801-2-222.
+3. Slade, E. and Naylor, M. G. (2020) \'A fair comparison of tree-based and parametric methods
+in multiple imputation by chained equations\', Statistics in medicine, 39(8), pp. 1156--1166.
+doi: 10.1002/sim.8468.
+4. Stef van Buuren, Karin Groothuis-Oudshoorn (2011). mice:Multivariate Imputation by
+Chained Equations in R.Journal of Statistical Software, 45(3), 1-67. DOI10.18637/jss.v045.i03.

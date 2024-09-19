@@ -1,0 +1,184 @@
+Parameter.Name,Parameter.Estimate,Parameter.Standard.Error,Experiment,Dataset.description
+Intercept,7.3373697059745755,0.07667327019385864,Experiment A,Original
+Age,0.03479525014250489,8.428892689216423e-4,Experiment A,Original
+Sex: Male,-0.08706449754770604,0.023607324897595636,Experiment A,Original
+BMI,0.00340596062084328,0.0022676219606957114,Experiment A,Original
+Children,0.10314859975863762,0.00975936256851637,Experiment A,Original
+Smoker: Yes,0.1564189495534576,0.14599945483985038,Experiment A,Original
+Region: North West,-0.0711305815669645,0.03373539099082219,Experiment A,Original
+Region: South East,-0.16272685958625793,0.03390286208289329,Experiment A,Original
+Region: South West,-0.137512451707468,0.03385571111509655,Experiment A,Original
+BMI*Smoker: Yes interaction,0.04557435728603192,0.004663313752362295,Experiment A,Original
+Intercept,7.060276287520917,0.09317467310734456,Experiment A,5% missing complete case
+Age,0.03435929654329554,0.001135459428981485,Experiment A,5% missing complete case
+Sex: Male,-0.0841803541194167,0.03146234960315287,Experiment A,5% missing complete case
+BMI,0.013932640244189732,0.0027206169103241463,Experiment A,5% missing complete case
+Children,0.0999522951940448,0.012640873815533698,Experiment A,5% missing complete case
+Smoker: Yes,1.5146144727259143,0.038821585938876316,Experiment A,5% missing complete case
+Region: North West,-0.0582328781343186,0.045214424402821564,Experiment A,5% missing complete case
+Region: South East,-0.16861183693094361,0.044602860392582905,Experiment A,5% missing complete case
+Region: South West,-0.12762153774768706,0.04507601044461407,Experiment A,5% missing complete case
+Intercept,6.965807960324022,0.12190868378692077,Experiment A,15% missing complete case
+Age,0.035283523768488236,0.0014738310669884455,Experiment A,15% missing complete case
+Sex: Male,-0.07004711431616092,0.04128641629631116,Experiment A,15% missing complete case
+BMI,0.014197144377512017,0.003429078929988895,Experiment A,15% missing complete case
+Children,0.10113161304642992,0.01689706321336293,Experiment A,15% missing complete case
+Smoker: Yes,1.5865209826305953,0.052236448166455576,Experiment A,15% missing complete case
+Region: North West,-0.08963635614138117,0.05989268420707673,Experiment A,15% missing complete case
+Region: South East,-0.16729094532036282,0.058749579861314676,Experiment A,15% missing complete case
+Region: South West,-0.14627842380270858,0.05933116812652338,Experiment A,15% missing complete case
+Intercept,7.131624700007582,0.21048366404299404,Experiment A,25% missing complete case
+Age,0.034217258690031484,0.0026300669753046794,Experiment A,25% missing complete case
+Sex: Male,-0.0050764677620476735,0.07451878985695126,Experiment A,25% missing complete case
+BMI,0.0070426376910775025,0.006244691852478006,Experiment A,25% missing complete case
+Children,0.1364185415088111,0.029244135973082973,Experiment A,25% missing complete case
+Smoker: Yes,1.5344066420681994,0.0910727277683701,Experiment A,25% missing complete case
+Region: North West,0.015865358438899066,0.10133057002589492,Experiment A,25% missing complete case
+Region: South East,-0.16035167328742436,0.10178044554357753,Experiment A,25% missing complete case
+Region: South West,-0.11158928747235924,0.1073511527663154,Experiment A,25% missing complete case
+Intercept,7.31920181256565,0.08340507986595663,Experiment A,5% missing pooled
+Age,0.0345124379024481,9.195053042966351e-4,Experiment A,5% missing pooled
+Sex: Male,-0.09256773386207841,0.025859501984494868,Experiment A,5% missing pooled
+BMI,0.0045642780840801115,0.0024711411421062045,Experiment A,5% missing pooled
+Children,0.10245699204461915,0.010601511230824904,Experiment A,5% missing pooled
+Smoker: Yes,0.4110600186521927,0.17565011303803255,Experiment A,5% missing pooled
+Region: North West,-0.06958644784454106,0.03733107965637169,Experiment A,5% missing pooled
+Region: South East,-0.1643728920393904,0.035942201628239086,Experiment A,5% missing pooled
+Region: South West,-0.12906567728613152,0.03784587724456713,Experiment A,5% missing pooled
+BMI*Smoker: Yes interaction,0.036654054320444336,0.005604285434625847,Experiment A,5% missing pooled
+Intercept,7.250132381969171,0.10870607911483407,Experiment A,15% missing pooled
+Age,0.034320647329652336,0.0013071814829795493,Experiment A,15% missing pooled
+Sex: Male,-0.10812075998753887,0.027672394143493245,Experiment A,15% missing pooled
+BMI,0.007740061245046781,0.0029519998122343955,Experiment A,15% missing pooled
+Children,0.11451424608094776,0.011656348736036305,Experiment A,15% missing pooled
+Smoker: Yes,0.5811848813363093,0.16093413516013078,Experiment A,15% missing pooled
+Region: North West,-0.13044653380259005,0.05028259743764726,Experiment A,15% missing pooled
+Region: South East,-0.18826575710493249,0.04682108608866181,Experiment A,15% missing pooled
+Region: South West,-0.16135844553600992,0.052291351196001874,Experiment A,15% missing pooled
+BMI*Smoker: Yes interaction,0.03123744549477527,0.005240672503835761,Experiment A,15% missing pooled
+Intercept,7.214408428127186,0.11337676102223869,Experiment A,25% missing pooled
+Age,0.03326817763595381,0.0010725509770791234,Experiment A,25% missing pooled
+Sex: Male,-0.08952640334339755,0.03881216231531368,Experiment A,25% missing pooled
+BMI,0.010808522856803076,0.0031300862416150043,Experiment A,25% missing pooled
+Children,0.1048780182389583,0.015703318731543528,Experiment A,25% missing pooled
+Smoker: Yes,1.010267827541892,0.19329635825643376,Experiment A,25% missing pooled
+Region: North West,-0.12510536902726704,0.05155312407644565,Experiment A,25% missing pooled
+Region: South East,-0.24224049028583014,0.05722846118513933,Experiment A,25% missing pooled
+Region: South West,-0.1500418669157627,0.0648620746721016,Experiment A,25% missing pooled
+BMI*Smoker: Yes interaction,0.01840791771461114,0.006272304485965829,Experiment A,25% missing pooled
+Intercept,7.3373697059745755,0.07667327019385864,Experiment B,Original
+Age,0.03479525014250489,8.428892689216423e-4,Experiment B,Original
+Sex: Male,-0.08706449754770604,0.023607324897595636,Experiment B,Original
+BMI,0.00340596062084328,0.0022676219606957114,Experiment B,Original
+Children,0.10314859975863762,0.00975936256851637,Experiment B,Original
+Smoker: Yes,0.1564189495534576,0.14599945483985038,Experiment B,Original
+Region: North West,-0.0711305815669645,0.03373539099082219,Experiment B,Original
+Region: South East,-0.16272685958625793,0.03390286208289329,Experiment B,Original
+Region: South West,-0.137512451707468,0.03385571111509655,Experiment B,Original
+BMI*Smoker: Yes interaction,0.04557435728603192,0.004663313752362295,Experiment B,Original
+Intercept,6.965807960324022,0.12190868378692077,Experiment B,15% missing complete case
+Age,0.035283523768488236,0.0014738310669884455,Experiment B,15% missing complete case
+Sex: Male,-0.07004711431616092,0.04128641629631116,Experiment B,15% missing complete case
+BMI,0.014197144377512017,0.003429078929988895,Experiment B,15% missing complete case
+Children,0.10113161304642992,0.01689706321336293,Experiment B,15% missing complete case
+Smoker: Yes,1.5865209826305953,0.052236448166455576,Experiment B,15% missing complete case
+Region: North West,-0.08963635614138117,0.05989268420707673,Experiment B,15% missing complete case
+Region: South East,-0.16729094532036282,0.058749579861314676,Experiment B,15% missing complete case
+Region: South West,-0.14627842380270858,0.05933116812652338,Experiment B,15% missing complete case
+Intercept,7.174324160545472,0.08304411574932549,Experiment B,Pooled data with PMM
+Age,0.034965701097955576,0.0010876535448877012,Experiment B,Pooled data with PMM
+Sex: Male,-0.09254144183721663,0.02970416620570141,Experiment B,Pooled data with PMM
+BMI,0.009085679548051617,0.0028667077587592586,Experiment B,Pooled data with PMM
+Children,0.11263815752193437,0.01263332028744417,Experiment B,Pooled data with PMM
+Smoker: Yes,0.6497936011820956,0.16939272029575528,Experiment B,Pooled data with PMM
+Region: North West,-0.10862936916878274,0.05062626790736146,Experiment B,Pooled data with PMM
+Region: South East,-0.1671598173401362,0.045144356532461904,Experiment B,Pooled data with PMM
+Region: South West,-0.16353455760576763,0.048822424115039044,Experiment B,Pooled data with PMM
+BMI*Smoker: Yes interaction,0.02874954120730544,0.005368784351382518,Experiment B,Pooled data with PMM
+Intercept,7.592653085797885,0.16787550547633048,Experiment B,Pooled data with Random sample
+Age,0.026523403354706012,0.0022057772034320914,Experiment B,Pooled data with Random sample
+Sex: Male,-0.07489676437115855,0.04394398828619973,Experiment B,Pooled data with Random sample
+BMI,0.008277823303965476,0.004764817972706899,Experiment B,Pooled data with Random sample
+Children,0.08364468767571134,0.01852790633342307,Experiment B,Pooled data with Random sample
+Smoker: Yes,0.23463102738161667,0.3407199562596212,Experiment B,Pooled data with Random sample
+Region: North West,-0.10587479880419383,0.06937937919319839,Experiment B,Pooled data with Random sample
+Region: South East,-0.12987045128147673,0.06314090631738987,Experiment B,Pooled data with Random sample
+Region: South West,-0.10386995456743299,0.05950598831965475,Experiment B,Pooled data with Random sample
+BMI*Smoker: Yes interaction,0.02975195792571101,0.010786733421237864,Experiment B,Pooled data with Random sample
+Intercept,7.486104175576671,0.12439711058149606,Experiment B,Pooled data with random forest
+Age,0.02969802246811354,0.001492609421035666,Experiment B,Pooled data with random forest
+Sex: Male,-0.09198626933328576,0.039788887458039976,Experiment B,Pooled data with random forest
+BMI,0.005866060353931538,0.0035341495188446165,Experiment B,Pooled data with random forest
+Children,0.0909193489788331,0.01814797125447831,Experiment B,Pooled data with random forest
+Smoker: Yes,0.388363700601712,0.2623876073817481,Experiment B,Pooled data with random forest
+Region: North West,-0.09754424685850299,0.05258222615128901,Experiment B,Pooled data with random forest
+Region: South East,-0.1441216517564329,0.055892184305967915,Experiment B,Pooled data with random forest
+Region: South West,-0.12074241474327593,0.049568719311821205,Experiment B,Pooled data with random forest
+BMI*Smoker: Yes interaction,0.035288714909860894,0.008314057688982253,Experiment B,Pooled data with random forest
+Intercept,7.3373697059745755,0.07667327019385864,Experiment C,Original
+Age,0.03479525014250489,8.428892689216423e-4,Experiment C,Original
+Sex: Male,-0.08706449754770604,0.023607324897595636,Experiment C,Original
+BMI,0.00340596062084328,0.0022676219606957114,Experiment C,Original
+Children,0.10314859975863762,0.00975936256851637,Experiment C,Original
+Smoker: Yes,0.1564189495534576,0.14599945483985038,Experiment C,Original
+Region: North West,-0.0711305815669645,0.03373539099082219,Experiment C,Original
+Region: South East,-0.16272685958625793,0.03390286208289329,Experiment C,Original
+Region: South West,-0.137512451707468,0.03385571111509655,Experiment C,Original
+BMI*Smoker: Yes interaction,0.04557435728603192,0.004663313752362295,Experiment C,Original
+Intercept,6.965807960324022,0.12190868378692077,Experiment C,Seed 42 complete case
+Age,0.035283523768488236,0.0014738310669884455,Experiment C,Seed 42 complete case
+Sex: Male,-0.07004711431616092,0.04128641629631116,Experiment C,Seed 42 complete case
+BMI,0.014197144377512017,0.003429078929988895,Experiment C,Seed 42 complete case
+Children,0.10113161304642992,0.01689706321336293,Experiment C,Seed 42 complete case
+Smoker: Yes,1.5865209826305953,0.052236448166455576,Experiment C,Seed 42 complete case
+Region: North West,-0.08963635614138117,0.05989268420707673,Experiment C,Seed 42 complete case
+Region: South East,-0.16729094532036282,0.058749579861314676,Experiment C,Seed 42 complete case
+Region: South West,-0.14627842380270858,0.05933116812652338,Experiment C,Seed 42 complete case
+Intercept,6.985781009986769,0.12993465344362953,Experiment C,Seed 25 complete case
+Age,0.03362944708638735,0.001607648241822975,Experiment C,Seed 25 complete case
+Sex: Male,-0.1697944416619275,0.044673061571629126,Experiment C,Seed 25 complete case
+BMI,0.015065849965553591,0.003914865869842054,Experiment C,Seed 25 complete case
+Children,0.12282508303266947,0.018142083368582175,Experiment C,Seed 25 complete case
+Smoker: Yes,1.5788143496876714,0.05304644541894483,Experiment C,Seed 25 complete case
+Region: North West,0.0387488139123727,0.06305453965237386,Experiment C,Seed 25 complete case
+Region: South East,-0.0935673950286089,0.06439498656187002,Experiment C,Seed 25 complete case
+Region: South West,-0.0962860516101007,0.06333936374995124,Experiment C,Seed 25 complete case
+Intercept,7.072237691376177,0.1269166336650944,Experiment C,Seed 100 complete case
+Age,0.037753649202590535,0.0015462035315719038,Experiment C,Seed 100 complete case
+Sex: Male,-0.055612931317948124,0.04308688819432402,Experiment C,Seed 100 complete case
+BMI,0.007169982333228125,0.0036183379756154857,Experiment C,Seed 100 complete case
+Children,0.11406413314190657,0.018153824697829838,Experiment C,Seed 100 complete case
+Smoker: Yes,1.6379261221337185,0.05494000635310648,Experiment C,Seed 100 complete case
+Region: North West,-0.09584511346843741,0.061177354678699135,Experiment C,Seed 100 complete case
+Region: South East,-0.12047461614126093,0.06302049282130003,Experiment C,Seed 100 complete case
+Region: South West,-0.14078059951520216,0.06250037631296163,Experiment C,Seed 100 complete case
+Intercept,7.250132381969171,0.10870607911483407,Experiment C,Seed 42 pooled
+Age,0.034320647329652336,0.0013071814829795493,Experiment C,Seed 42 pooled
+Sex: Male,-0.10812075998753887,0.027672394143493245,Experiment C,Seed 42 pooled
+BMI,0.007740061245046781,0.0029519998122343955,Experiment C,Seed 42 pooled
+Children,0.11451424608094776,0.011656348736036305,Experiment C,Seed 42 pooled
+Smoker: Yes,0.5811848813363093,0.16093413516013078,Experiment C,Seed 42 pooled
+Region: North West,-0.13044653380259005,0.05028259743764726,Experiment C,Seed 42 pooled
+Region: South East,-0.18826575710493249,0.04682108608866181,Experiment C,Seed 42 pooled
+Region: South West,-0.16135844553600992,0.052291351196001874,Experiment C,Seed 42 pooled
+BMI*Smoker: Yes interaction,0.03123744549477527,0.005240672503835761,Experiment C,Seed 42 pooled
+Intercept,7.1665057381697554,0.10446817285797613,Experiment C,Seed 25 pooled
+Age,0.03634320382468091,0.001028711098424481,Experiment C,Seed 25 pooled
+Sex: Male,-0.13651780215070372,0.03066015080711734,Experiment C,Seed 25 pooled
+BMI,0.007140206193943916,0.0030296404893800353,Experiment C,Seed 25 pooled
+Children,0.10536733361851054,0.011768003758772199,Experiment C,Seed 25 pooled
+Smoker: Yes,0.6306549202243414,0.15407659661213202,Experiment C,Seed 25 pooled
+Region: North West,-0.02901467194400009,0.04424710774279394,Experiment C,Seed 25 pooled
+Region: South East,-0.13811569579983154,0.04407884731668558,Experiment C,Seed 25 pooled
+Region: South West,-0.15013333717190236,0.038660409412471716,Experiment C,Seed 25 pooled
+BMI*Smoker: Yes interaction,0.029813345653699707,0.004896767657400963,Experiment C,Seed 25 pooled
+Intercept,7.301659087636127,0.09888407306351056,Experiment C,Seed 100 pooled
+Age,0.03525575884090905,0.0010648775481244938,Experiment C,Seed 100 pooled
+Sex: Male,-0.0754503776953067,0.030301222834297613,Experiment C,Seed 100 pooled
+BMI,0.003722446345068436,0.0029903047487895938,Experiment C,Seed 100 pooled
+Children,0.099330664451825465,0.013226767268455283,Experiment C,Seed 100 pooled
+Smoker: Yes,0.6926601469268359,0.22263899198073842,Experiment C,Seed 100 pooled
+Region: North West,-0.08526012702968942,0.03945818035209147,Experiment C,Seed 100 pooled
+Region: South East,-0.11772210836434506,0.051173233389857534,Experiment C,Seed 100 pooled
+Region: South West,-0.13825846455831142,0.043426344698230854,Experiment C,Seed 100 pooled
+BMI*Smoker: Yes interaction,0.027411732076465807,0.00714815726587353,Experiment C,Seed 100 pooled
